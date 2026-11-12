@@ -1,0 +1,32 @@
+{
+  "release_policy": "latest-published-stable-source",
+  "status": "bounded-runtime-checks-passed-not-production-approved",
+  "validation_report": "docs/validation.md",
+  "source_release_branch": null,
+  "source_stability_basis": "Google commit message: Bump Emulator to 37.3.10 Stable; source.properties independently verified",
+  "source_version": "37.3.10",
+  "published_source_verified": true,
+  "source_revision": "223638d03d23f1eeb303535ed5d55d4f211107fd",
+  "resolved_manifest_revision": "2692acc620f6563b21995540656674faeb536cdc",
+  "manifest_sha256": "d6cb198b8c6c5cb9e37b386536bd637d2ffe24a1462b6d896bf021dcd058dca9",
+  "sdk_repository": "https://dl.google.com/android/repository/repository2-3.xml",
+  "sdk_channel": "channel-0",
+  "sdk_version": "37.3.10",
+  "sdk_build_id": "16970787",
+  "sdk_source_correspondence_verified": false,
+  "allow_beta_or_rc": false,
+  "allow_version_relabeling": false,
+  "target": "linux_aarch64",
+  "guest_api": 36,
+  "notes": [
+    "Published stable commit 37.3.10 is the selected source; Google publishes the SDK 37.3.10 binary (build 16970787) without a Linux ARM64 package, so no binary equivalence is claimed.",
+    "Dependencies were independently resolved from Google branch history at or before the stable commit timestamp; this is a compatibility candidate, not the official release manifest.",
+    "Google gfxstream fix a5b0def9cd0f858b3fc9e2fa88a11a6271f46b02 is part of the resolved gfxstream revision; the local backport used for 37.2.12 is no longer applied.",
+    "No source version relabeling, development-head substitution, or runtime permission expansion is allowed."
+  ],
+  "source_ref_type": "published-stable-commit",
+  "source_designation": "stable",
+  "dependency_resolution": "independent-historical-candidate-not-official-release-manifest",
+  "dependency_cutoff": "2026-11-13T20:20:28Z",
+  "source_evidence_sha256": "b1993e11f6b7d5bdd96ef9a2b535466347989e92cb72c76169a462038f8e5c90"
+}

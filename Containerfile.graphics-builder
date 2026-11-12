@@ -1,0 +1,12 @@
+# Native ARM64 builder for reviewed Google SwiftShader source, not an emulator.
+FROM docker.io/library/ubuntu:24.04@sha256:9c7f200c07e3d4a03e7249d2c16bf66a51120fb876aa2242cf31451412543289
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git python3 cmake ninja-build g++ libx11-dev libxext-dev && \
+    rm -rf /var/lib/apt/lists/*
+COPY patches/swiftshader-jit-mmap.patch /opt/graphics/swiftshader-jit-mmap.patch
+COPY upstream-graphics.lock.json /etc/upstream-graphics.lock.json
+COPY scripts/build-upstream-graphics /usr/local/libexec/build-upstream-graphics
+RUN chmod +x /usr/local/libexec/build-upstream-graphics
+WORKDIR /work
+ENTRYPOINT ["/bin/bash"]

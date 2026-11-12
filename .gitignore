@@ -1,0 +1,8 @@
+diagnostics/
+artifacts/
+build-inputs/
+screenshots/
+.DS_Store
+__pycache__/
+*.pyc
+dist-release/

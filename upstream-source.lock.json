@@ -1,0 +1,25 @@
+{
+  "status": "independently-resolved-candidate-build-and-runtime-validation-required",
+  "manifest_repository": "https://android.googlesource.com/platform/manifest",
+  "manifest_revision": "2692acc620f6563b21995540656674faeb536cdc",
+  "manifest_file": "default.xml",
+  "upstream_manifest_sha256": "7328128a4eec4f214edfefe6ae7445bfd82d953870cc3aa66717b41310497a27",
+  "manifest_sha256": "d6cb198b8c6c5cb9e37b386536bd637d2ffe24a1462b6d896bf021dcd058dca9",
+  "manifest_resolution": "independent-historical-candidate-not-official-release-manifest",
+  "dependency_cutoff": "2026-11-13T20:20:28Z",
+  "resolver_sha256": "4320d66748b21764e51e5ad5ae0b87445c3db708df8f85b83671d6dfa01e48b4",
+  "source_ref_type": "published-stable-commit",
+  "release_branch": null,
+  "source_version": "37.3.10",
+  "selected_project_count": 65,
+  "qemu_revision": "223638d03d23f1eeb303535ed5d55d4f211107fd",
+  "source_origin": "https://android.googlesource.com/",
+  "excluded_projects": [
+    "platform/prebuilts/android-emulator",
+    "platform/prebuilts/android-emulator-build/system-images"
+  ],
+  "target": "linux_aarch64",
+  "build_host": "linux/amd64",
+  "runtime_guest_api": 36,
+  "resolution_records_sha256": "069d2bf7d6f35cc87575ca85f966cf2afd1f00c577ad93f7501ca3b90c8eb7e1"
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "note": "Versions currently in use; scripts/check-upstream-updates.py reports anything newer.",
+  "emulator_source": "37.3.10",
+  "cmdline_tools_build": "11076708",
+  "system_image": {
+    "path": "system-images;android-36;google_apis;arm64-v8a",
+    "revision": 7
+  },
+  "base_image": {
+    "reference": "docker.io/library/ubuntu:24.04",
+    "digest": "sha256:9c7f200c07e3d4a03e7249d2c16bf66a51120fb876aa2242cf31451412543289"
+  }
+}

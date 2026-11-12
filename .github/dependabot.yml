@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Actions are pinned to commit SHAs with a version comment; Dependabot updates both.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+# Base images, the emulator source, SDK tools and system images are checked by
+# .github/workflows/upstream-updates.yml instead.

@@ -1,0 +1,42 @@
+name: Upstream updates
+
+# Opens one issue per available update that Dependabot cannot track: stable
+# emulator, SDK command-line tools, Android system image, Ubuntu base digest.
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check upstream versions
+        run: python3 -I scripts/check-upstream-updates.py > "$RUNNER_TEMP/updates.jsonl"
+      - name: Open issues for new versions
+        run: |
+          while IFS= read -r update; do
+            component=$(jq -r .component <<< "$update")
+            available=$(jq -r .available <<< "$update")
+            title="Upstream update: $component $available"
+            if gh issue list --repo "$GITHUB_REPOSITORY" --state all --search "\"$title\" in:title" --json title \
+                --jq '.[].title' | grep -Fxq "$title"; then
+              echo "Issue exists: $title"
+              continue
+            fi
+            body=$(jq -r '"Current: `\(.current)`\nAvailable: `\(.available)`\n\n\(.action).\n\nUpdate `upstream-watch.json` when done."' <<< "$update")
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          done < "$RUNNER_TEMP/updates.jsonl"
+          test -s "$RUNNER_TEMP/updates.jsonl" || echo 'Everything is current' >> "$GITHUB_STEP_SUMMARY"

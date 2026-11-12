@@ -1,0 +1,16 @@
+# Native ARM64 source fetcher: no compiler, emulator, Repo hooks, or host mounts.
+# Also the default image for scripts/package-source, which compresses with xz.
+FROM docker.io/library/ubuntu:24.04@sha256:9c7f200c07e3d4a03e7249d2c16bf66a51120fb876aa2242cf31451412543289
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git python3 xz-utils && rm -rf /var/lib/apt/lists/*
+COPY scripts/fetch-upstream-sources.py /usr/local/libexec/fetch-upstream-sources.py
+COPY upstream-source.lock.json /etc/upstream-source.lock.json
+# The lock pins an independently resolved manifest; the fetcher checks both files' SHA-256.
+ARG SOURCE_VERSION=37.3.10
+COPY upstream-dependencies/${SOURCE_VERSION}/resolved-manifest.xml \
+     upstream-dependencies/${SOURCE_VERSION}/resolution-records.json /etc/upstream-dependencies/
+WORKDIR /work
+ENTRYPOINT ["/usr/bin/python3", "/usr/local/libexec/fetch-upstream-sources.py"]
+CMD ["--lock", "/etc/upstream-source.lock.json", "--destination", "/work/source", \
+     "--resolved-manifest", "/etc/upstream-dependencies/resolved-manifest.xml"]

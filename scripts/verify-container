@@ -1,0 +1,110 @@
+#!/bin/bash
+# CI and local verification; never changes host security policy or existing AVDs.
+set -euo pipefail
+mode=${1:-smoke}
+image=${2:-localhost/podman-android-emulator:api36}
+case "$mode" in smoke|boot) ;; *) echo 'Usage: verify-container [smoke|boot] [image]' >&2; exit 2 ;; esac
+test "$(podman info --format '{{.Host.Security.Rootless}}')" = true
+
+if [[ "$mode" == smoke ]]; then
+    podman run --pull=never --rm -i --entrypoint /bin/bash "$image" -s <<'CHECK'
+set -euo pipefail
+test "$(uname -m)" = aarch64
+test -d "$ANDROID_HOME/platforms" && test -d "$ANDROID_HOME/platform-tools"
+python3 /usr/local/libexec/verify-upstream-input.py \
+    "$ANDROID_HOME/emulator" /usr/share/android-emulator/provenance.json
+qemu="$ANDROID_HOME/emulator/qemu/linux-aarch64/qemu-system-aarch64-headless"
+dependencies=$(ldd "$qemu")
+if grep -q 'not found' <<< "$dependencies"; then
+    printf '%s\n' "$dependencies" >&2
+    exit 1
+fi
+adb version
+"$ANDROID_HOME/emulator/emulator" -no-window -version
+python3 - <<'PY'
+import ctypes
+import mmap
+page = mmap.mmap(-1, mmap.PAGESIZE, flags=mmap.MAP_PRIVATE | mmap.MAP_ANONYMOUS,
+                 prot=mmap.PROT_READ | mmap.PROT_WRITE)
+address = ctypes.addressof(ctypes.c_char.from_buffer(page))
+libc = ctypes.CDLL(None, use_errno=True)
+assert libc.mprotect(ctypes.c_void_p(address), ctypes.c_size_t(mmap.PAGESIZE),
+                     mmap.PROT_READ | mmap.PROT_EXEC) == 0, ctypes.get_errno()
+page.close()
+print('Anonymous RW-to-RX check passed')
+PY
+CHECK
+    exit 0
+fi
+
+# Full integration tests require the security configuration we claim to support.
+test "$(uname -m)" = aarch64
+test "$(getenforce)" = Enforcing
+test -r /dev/kvm && test -w /dev/kvm
+name="android-ci-$(date +%s)-$$"
+volume="${name}-data"
+out="${ANDROID_TEST_OUTPUT:-diagnostics/ci}"
+mkdir -p "$out"
+cleanup() {
+    status=$?
+    trap - EXIT
+    podman logs "$name" > "$out/boot.log" 2>&1 || true
+    podman inspect "$name" > "$out/container.json" 2>&1 || true
+    timeout 20 podman exec "$name" adb -s emulator-5554 logcat -d > "$out/logcat.txt" 2>&1 || true
+    timeout 10 podman exec "$name" adb -s emulator-5554 emu kill >/dev/null 2>&1 || true
+    podman stop -t 20 "$name" >/dev/null 2>&1 || true
+    podman rm -f "$name" >/dev/null 2>&1 || true
+    podman volume rm "$volume" >/dev/null 2>&1 || true
+    exit "$status"
+}
+trap cleanup EXIT
+podman volume create "$volume" >/dev/null
+podman run --pull=never -d --name "$name" --device=/dev/kvm --shm-size=1g \
+    --memory=8g --memory-swap=8g --cpus=4 \
+    -e ANDROID_MEMORY_MB=4096 -e ANDROID_CORES=4 \
+    -v "$volume:/root/.android" "$image"
+test "$(podman inspect "$name" --format '{{.HostConfig.Privileged}}')" = false
+test "$(podman inspect "$name" --format '{{.HostConfig.SecurityOpt}}')" = '[]'
+# No host network, published ports, extra capabilities or security overrides.
+deadline=$((SECONDS + 360))
+booted=false
+while (( SECONDS < deadline )); do
+    test "$(podman inspect "$name" --format '{{.State.Running}}')" = true
+    completed=$(timeout 10 podman exec "$name" adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+    if [[ "$completed" == 1 ]]; then booted=true; break; fi
+    sleep 5
+done
+if [[ "$booted" != true ]]; then echo 'Android boot timed out' >&2; exit 1; fi
+podman exec "$name" adb devices -l | tee "$out/adb.txt"
+for service in zygote surfaceflinger; do
+    test "$(timeout 15 podman exec "$name" adb -s emulator-5554 shell getprop "init.svc.$service" | tr -d '\r')" = running
+done
+test "$(timeout 15 podman exec "$name" adb -s emulator-5554 shell getprop init.svc.bootanim | tr -d '\r')" = stopped
+timeout 15 podman exec "$name" adb -s emulator-5554 shell 'input keyevent KEYCODE_WAKEUP; wm dismiss-keyguard'
+timeout 20 podman exec "$name" adb -s emulator-5554 exec-out screencap -p > "$out/screen.png"
+python3 - "$out/screen.png" <<'PY'
+import pathlib, struct, sys
+png = pathlib.Path(sys.argv[1]).read_bytes()
+assert png[:8] == b'\x89PNG\r\n\x1a\n', 'Invalid screenshot'
+assert len(png) > 100 and all(struct.unpack('>II', png[16:24])), 'Empty screenshot'
+PY
+guest() { timeout 30 podman exec "$name" adb -s emulator-5554 shell "$@" | tr -d '\r'; }
+# The host has no Vulkan driver; a guest Vulkan driver would hang the first Vulkan call.
+test -z "$(guest getprop ro.hardware.vulkan)"
+# Without the emulator's UWB port the guest retries the missing UWB HAL forever.
+test "$(guest 'logcat -d -b all | grep -c "Could not find .aidl/android.hardware.uwb" || true')" = 0
+# WebView (as in mail apps): render a page; its GPU thread must not spin.
+guest 'am start -W -n com.android.htmlviewer/.HTMLViewerActivity -a android.intent.action.VIEW -d "data:text/html,<h1>WebView</h1>"' > "$out/webview.txt"
+# A hung GPU thread spins at 100% indefinitely; rendering this page settles in seconds.
+sleep 20
+gpu_ticks=$(guest '
+    pid=$(pidof com.android.htmlviewer)
+    ticks() { for task in /proc/$pid/task/*; do
+        grep -q Chrome_InProcGp "$task/comm" && cut -d" " -f14,15 "$task/stat" | tr " " +; done; }
+    before=$(( $(ticks) )); sleep 10; echo $(( $(ticks) - before ))')
+echo "WebView GPU thread ticks over 10 s: $gpu_ticks" | tee -a "$out/webview.txt"
+(( gpu_ticks < 500 ))
+guest 'am force-stop com.android.htmlviewer'
+test "$(guest 'logcat -d | grep -c "FATAL EXCEPTION IN SYSTEM PROCESS" || true')" = 0
+test "$(getenforce)" = Enforcing
+echo 'Android boot, services, screenshot, WebView, and security-boundary checks passed'

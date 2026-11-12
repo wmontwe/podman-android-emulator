@@ -1,0 +1,6 @@
+# Optional diagnostic image for the locally built upstream emulator only.
+ARG RUNTIME_IMAGE=localhost/podman-android-emulator:api36
+FROM ${RUNTIME_IMAGE}
+RUN apt-get update && apt-get install -y --no-install-recommends gdb strace && \
+    rm -rf /var/lib/apt/lists/*
+ENTRYPOINT ["/bin/bash"]

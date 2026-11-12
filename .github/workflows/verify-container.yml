@@ -1,0 +1,63 @@
+name: Verify Android container
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      boot_test:
+        description: Test a locally prepared, reviewed upstream image on a trusted runner
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-container-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-checks:
+    name: Launcher and input-validation tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check scripts and safety tests
+        run: |
+          bash -n scripts/start-android scripts/run-android scripts/verify-container scripts/test-android-version \
+            scripts/build-upstream-emulator scripts/build-upstream-uuid scripts/build-upstream-graphics scripts/package-source \
+            scripts/continue-upstream-build
+          python3 -m unittest discover -s tests -v
+          git diff --check
+      # Images are built only by release.yml, from a published release's pinned
+      # emulator archive. Never fall back to prebuilt emulator binaries.
+
+  boot:
+    name: Reviewed upstream image under rootless KVM and SELinux
+    if: github.event_name == 'workflow_dispatch' && inputs.boot_test && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, Linux, ARM64, android-kvm-selinux]
+    environment: android-boot-test
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Require preloaded upstream image and security boundaries
+        run: |
+          test "$(uname -m)" = aarch64
+          test "$(podman info --format '{{.Host.Security.Rootless}}')" = true
+          test "$(getenforce)" = Enforcing
+          test -r /dev/kvm && test -w /dev/kvm
+          podman image exists localhost/podman-android-emulator:api36
+      - name: Smoke and boot checks with bounded RAM and CPU
+        run: |
+          scripts/verify-container smoke localhost/podman-android-emulator:api36
+          scripts/verify-container boot localhost/podman-android-emulator:api36
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: android-boot-diagnostics
+          path: diagnostics/ci/
+          if-no-files-found: warn
+          retention-days: 7

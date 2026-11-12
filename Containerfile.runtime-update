@@ -1,0 +1,22 @@
+# Development-only: reuse an already-reviewed local SDK image after recompiling
+# the emulator. Avoid redownloading the system image for every source patch.
+ARG SDK_IMAGE=localhost/podman-android-emulator:api36
+FROM ${SDK_IMAGE}
+RUN rm -rf "$ANDROID_HOME/emulator" && \
+    mkdir -p "$ANDROID_HOME/platforms" "$ANDROID_HOME/platform-tools"
+COPY build-inputs/emulator/ /opt/android-sdk/emulator/
+COPY build-inputs/provenance.json /usr/share/android-emulator/provenance.json
+COPY scripts/verify-upstream-input.py /usr/local/libexec/verify-upstream-input.py
+COPY scripts/check-sdk-image-compatibility.py /usr/local/libexec/check-sdk-image-compatibility.py
+COPY scripts/verify-upstream-release.py /usr/local/libexec/verify-upstream-release.py
+COPY upstream-release-target.json /usr/share/android-emulator/release-target.json
+COPY scripts/start-android /usr/local/bin/start-android
+RUN python3 /usr/local/libexec/verify-upstream-release.py \
+      /usr/share/android-emulator/release-target.json /usr/share/android-emulator/provenance.json && \
+    python3 /usr/local/libexec/verify-upstream-input.py \
+      "$ANDROID_HOME/emulator" /usr/share/android-emulator/provenance.json && \
+    python3 /usr/local/libexec/check-sdk-image-compatibility.py \
+      "$ANDROID_HOME/system-images/android-${ANDROID_API}/google_apis/arm64-v8a/package.xml" \
+      /usr/share/android-emulator/provenance.json "$ANDROID_API" && \
+    chmod +x /usr/local/bin/start-android
+ENTRYPOINT ["/usr/local/bin/start-android"]

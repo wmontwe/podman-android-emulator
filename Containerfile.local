@@ -1,0 +1,33 @@
+# Local image: adds Android SDK components that may not be redistributed.
+# Build this yourself; it accepts the Android SDK licenses. Review them first.
+# Pin BASE_IMAGE by digest and verify its signature before building (docs/releases.md).
+ARG BASE_IMAGE=ghcr.io/wmontwe/podman-android-emulator:37.3.10-r1
+FROM ${BASE_IMAGE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG CMDLINE_TOOLS_VERSION=11076708
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64
+ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl unzip openjdk-17-jre-headless && \
+    rm -rf /var/lib/apt/lists/*
+RUN mkdir -p "$ANDROID_HOME/cmdline-tools" && \
+    curl --proto '=https' --tlsv1.2 -fL "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_VERSION}_latest.zip" -o /tmp/tools.zip && \
+    unzip -q /tmp/tools.zip -d /tmp/tools && \
+    mv /tmp/tools/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest" && \
+    rm -rf /tmp/tools /tmp/tools.zip
+# Building accepts the applicable Android SDK licenses; review before building.
+RUN yes | sdkmanager --licenses >/dev/null
+RUN curl --proto '=https' --tlsv1.2 -fL \
+      https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-4.xml \
+      -o /tmp/google-apis-repository.xml && \
+    python3 /usr/local/libexec/check-sdk-image-compatibility.py \
+      /tmp/google-apis-repository.xml /usr/share/android-emulator/provenance.json "$ANDROID_API" && \
+    sdkmanager "system-images;android-${ANDROID_API};google_apis;arm64-v8a" && \
+    rm /tmp/google-apis-repository.xml && \
+    python3 /usr/local/libexec/check-sdk-image-compatibility.py \
+      "$ANDROID_HOME/system-images/android-${ANDROID_API}/google_apis/arm64-v8a/package.xml" \
+      /usr/share/android-emulator/provenance.json "$ANDROID_API" && \
+    python3 /usr/local/libexec/verify-upstream-input.py \
+      /opt/android-sdk/emulator /usr/share/android-emulator/provenance.json

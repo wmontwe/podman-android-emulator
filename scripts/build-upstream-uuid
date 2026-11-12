@@ -1,0 +1,121 @@
+#!/bin/bash
+# Offline source rebuild: the pinned ARM64 libuuid archive has unsafe TLSLE
+# relocations when embedded in a shared library. Never patch the binary.
+set -euo pipefail
+export ANDROID_SOURCE_ROOT=${ANDROID_SOURCE_ROOT:-/work/source}
+export ANDROID_UUID_ROOT=${ANDROID_UUID_ROOT:-/work/uuid-pic/install}
+export ANDROID_DIST_ROOT=${ANDROID_DIST_ROOT:-/work/dist}
+python3 - <<'PY'
+import difflib
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tarfile
+import tempfile
+
+root = Path(os.environ['ANDROID_SOURCE_ROOT'])
+install = Path(os.environ['ANDROID_UUID_ROOT'])
+dist = Path(os.environ['ANDROID_DIST_ROOT'])
+jobs = int(os.environ.get('ANDROID_BUILD_JOBS', '8'))
+if not 1 <= jobs <= 8:
+    raise SystemExit('UUID build requires 1..8 jobs')
+archive = root / 'prebuilts/android-emulator-build/archive/e2fsprogs-1.42.13.tar.xz'
+expected = 'e16474b5a3a30f9197160c4b91bd48d5a463583049c0fcc405b6f0f7075aa0c7'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+if sha(archive) != expected:
+    raise SystemExit('Pinned libuuid source archive hash mismatch')
+archive_revision = subprocess.check_output(['git', '-C', str(archive.parent), 'rev-parse', 'HEAD'], text=True).strip()
+if archive_revision != '9b0bdade8b09267282fb901d21219ab6af013c60':
+    raise SystemExit('Unexpected source archive project revision')
+compiler = subprocess.check_output(['aarch64-linux-gnu-gcc', '--version'], text=True)
+flags = '-O2 -g -fPIC -ftls-model=global-dynamic'
+install.mkdir(parents=True, exist_ok=True)
+dist.mkdir(parents=True, exist_ok=True)
+with tempfile.TemporaryDirectory(prefix='uuid-source-', dir=install.parent) as work:
+    work = Path(work)
+    with tarfile.open(archive) as tar:
+        tar.extractall(work, filter='data')
+    source = work / 'e2fsprogs-1.42.13'
+    build = work / 'build'
+    build.mkdir()
+    command = [str(source / 'configure'), '--build=x86_64-pc-linux-gnu',
+               '--host=aarch64-linux-gnu', '--prefix=' + str(install),
+               '--disable-nls', '--disable-elf-shlibs', '--disable-bsd-shlibs',
+               '--disable-profile']
+    env = dict(os.environ, CC='aarch64-linux-gnu-gcc', AR='aarch64-linux-gnu-ar',
+               RANLIB='aarch64-linux-gnu-ranlib', CFLAGS=flags)
+    subprocess.run(command, cwd=build, env=env, check=True)
+    subprocess.run(['make', '-C', 'lib/uuid', '-j' + str(jobs), 'libuuid.a'], cwd=build, env=env, check=True)
+    library = build / 'lib/uuid/libuuid.a'
+    relocations = subprocess.check_output(['aarch64-linux-gnu-readelf', '-rW', str(library)], text=True)
+    if 'R_AARCH64_TLSLE_' in relocations or 'R_AARCH64_TLSDESC_' not in relocations:
+        raise SystemExit('UUID archive does not have the required shared-library-safe TLS relocations')
+    (install / 'lib').mkdir(exist_ok=True)
+    (install / 'include/uuid').mkdir(parents=True, exist_ok=True)
+    shutil.copy2(library, install / 'lib/libuuid.a')
+    shutil.copy2(build / 'lib/uuid/uuid.h', install / 'include/uuid/uuid.h')
+    original_header = root / 'prebuilts/android-emulator-build/common/e2fsprogs/linux-aarch64/include/uuid/uuid.h'
+    if sha(original_header) != sha(install / 'include/uuid/uuid.h'):
+        raise SystemExit('Rebuilt UUID header differs; review before changing consumer include paths')
+    (dist / 'uuid-pic-relocations.txt').write_text(relocations)
+
+qemu = root / 'external/qemu'
+name = 'android/build/cmake/config/emu-uuid-config.cmake'
+config = qemu / name
+before = subprocess.check_output(['git', '-C', str(qemu), 'show', 'HEAD:' + name], text=True)
+anchor = 'if(DARWIN_X86_64 OR DARWIN_AARCH64)'
+addition = '''# ARM64's pinned static prebuilt uses local-exec TLS, unsafe in DSOs.
+# Require the separately source-built PIC archive; never fall back silently.
+if(ANDROID_TARGET_TAG STREQUAL "linux-aarch64")
+  if(NOT DEFINED ENV{ANDROID_UUID_ROOT})
+    message(FATAL_ERROR "Set ANDROID_UUID_ROOT to the reviewed PIC libuuid build")
+  endif()
+  get_filename_component(PREBUILT_ROOT "$ENV{ANDROID_UUID_ROOT}" ABSOLUTE)
+  if(NOT EXISTS "${PREBUILT_ROOT}/lib/libuuid.a")
+    message(FATAL_ERROR "PIC libuuid archive is missing")
+  endif()
+endif()
+
+'''
+if before.count(anchor) != 1:
+    raise SystemExit('UUID CMake patch anchor changed')
+legacy_after = before.replace(anchor, addition + anchor)
+# Keep the byte-identical upstream header path to preserve compiled consumers.
+# Only the link archive changes; its TLS model is the faulty component.
+addition = 'set(UUID_LIBRARY_ROOT "${PREBUILT_ROOT}")\n' + addition.replace('PREBUILT_ROOT', 'UUID_LIBRARY_ROOT')
+after = before.replace(anchor, addition + anchor)
+after = after.replace('"${PREBUILT_ROOT}/lib/libuuid', '"${UUID_LIBRARY_ROOT}/lib/libuuid')
+if config.read_text() not in (before, after, legacy_after):
+    raise SystemExit('UUID CMake file contains unexpected changes')
+config.write_text(after)
+patch = ''.join(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
+                                   fromfile='a/' + name, tofile='b/' + name))
+(root / 'external/local-uuid-pic.patch').write_text(patch)
+record = {
+    'description': 'Rebuild pinned libuuid source as PIC/global-dynamic TLS; require it for ARM64 shared-library links',
+    'source_revision': subprocess.check_output(['git', '-C', str(qemu), 'rev-parse', 'HEAD'], text=True).strip(),
+    'patch_sha256': hashlib.sha256(patch.encode()).hexdigest(),
+    'files': {name: {'before': hashlib.sha256(before.encode()).hexdigest(), 'after': sha(config)}},
+    'dependency_build': {
+        'source_repository': 'https://android.googlesource.com/platform/prebuilts/android-emulator-build/archive',
+        'source_revision': archive_revision,
+        'source_archive': archive.name,
+        'source_archive_sha256': expected,
+        'compiler': compiler,
+        'cflags': flags,
+        'configure_arguments': command[1:],
+        'build_command': 'make -C lib/uuid -j' + str(jobs) + ' libuuid.a',
+        'libuuid_sha256': sha(install / 'lib/libuuid.a'),
+        'header_sha256': sha(install / 'include/uuid/uuid.h'),
+        'relocations_sha256': sha(dist / 'uuid-pic-relocations.txt'),
+        'build_script_sha256': sha(Path('/usr/local/libexec/build-upstream-uuid')),
+    },
+}
+(root / 'external/local-uuid-pic.json').write_text(json.dumps(record, indent=2) + '\n')
+for suffix in ('json', 'patch'):
+    shutil.copy2(root / ('external/local-uuid-pic.' + suffix), dist)
+print('PIC libuuid built from pinned source; no local-exec TLS relocations')
+PY

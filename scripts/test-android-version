@@ -1,0 +1,66 @@
+#!/bin/bash
+# Download and boot one API in a disposable rootless container; preserve results.
+set -euo pipefail
+api=${1:?Usage: test-android-version API [image]}
+[[ "$api" =~ ^[0-9]+$ ]] || exit 2
+image=${2:-localhost/podman-android-emulator:api36}
+test "$(podman info --format '{{.Host.Security.Rootless}}')" = true
+podman image exists "$image" || { echo "Reviewed upstream image missing: $image" >&2; exit 1; }
+name="android-api${api}-test-$$"
+volume="${name}-data"
+out="diagnostics/api-${api}"
+stage=setup
+mkdir -p "$out"
+cleanup() {
+    status=$?
+    trap - EXIT
+    podman cp "$name:/tmp/android-version.log" "$out/boot.log" >/dev/null 2>&1 || true
+    podman exec "$name" timeout 15 adb -s emulator-5554 logcat -d > "$out/logcat.txt" 2>&1 || true
+    podman inspect "$name" > "$out/container.json" 2>&1 || true
+    if [[ "$status" != 0 && ${ANDROID_TEST_KEEP_FAILURE:-0} == 1 ]]; then
+        printf 'FAIL at %s (exit %s); retained container=%s volume=%s\n' "$stage" "$status" "$name" "$volume" >> "$out/result.txt"
+        cat "$out/result.txt"
+        exit "$status"
+    fi
+    podman exec "$name" timeout 10 adb -s emulator-5554 emu kill >/dev/null 2>&1 || true
+    podman stop -t 20 "$name" >/dev/null 2>&1 || true
+    podman rm -f "$name" >/dev/null 2>&1 || true
+    podman volume rm "$volume" >/dev/null 2>&1 || true
+    if [[ "$status" != 0 ]]; then echo "FAIL at $stage (exit $status)" >> "$out/result.txt"; fi
+    exit "$status"
+}
+trap cleanup EXIT
+printf 'API=%s\nIMAGE=%s\n' "$api" "$image" > "$out/result.txt"
+podman volume create "$volume" >/dev/null
+podman run --pull=never -d --name "$name" --device=/dev/kvm --shm-size=1g \
+    --memory=8g --memory-swap=8g --cpus=4 \
+    -v "$volume:/root/.android" --entrypoint /bin/bash "$image" -c 'exec sleep infinity'
+stage=sdk-install
+podman exec "$name" bash -lc "sdkmanager 'system-images;android-${api};google_apis;arm64-v8a'" > "$out/sdk-install.log" 2>&1
+podman exec "$name" sh -c "cat /opt/android-sdk/system-images/android-${api}/google_apis/arm64-v8a/source.properties" > "$out/system-image.properties"
+podman cp "$name:/opt/android-sdk/system-images/android-${api}/google_apis/arm64-v8a/package.xml" "$out/package.xml" >/dev/null
+stage=boot
+# The same launcher as the default runtime: AVD creation, emulator flags and guest policy.
+podman exec -d -e ANDROID_API="$api" "$name" bash -lc "start-android > /tmp/android-version.log 2>&1; echo \$? > /tmp/emulator.exit"
+deadline=$((SECONDS + 420))
+booted=false
+while (( SECONDS < deadline )); do
+    if podman exec "$name" test -f /tmp/emulator.exit; then
+        echo 'Host emulator exited before boot completion' >> "$out/result.txt"
+        exit 1
+    fi
+    completed=$(podman exec "$name" timeout 8 adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+    if [[ "$completed" == 1 ]]; then booted=true; break; fi
+    sleep 5
+done
+if [[ "$booted" != true ]]; then echo 'Boot timeout (420 seconds)' >> "$out/result.txt"; exit 1; fi
+podman exec "$name" timeout 15 adb -s emulator-5554 shell \
+    'getprop ro.build.version.release; getprop ro.build.version.sdk; getprop sys.boot_completed; getprop init.svc.zygote; getprop init.svc.surfaceflinger; getprop init.svc.bootanim; uname -a' >> "$out/result.txt"
+for service in zygote surfaceflinger; do
+    test "$(podman exec "$name" timeout 10 adb -s emulator-5554 shell getprop "init.svc.$service" | tr -d '\r')" = running
+done
+podman exec "$name" timeout 15 adb -s emulator-5554 shell 'input keyevent KEYCODE_WAKEUP; wm dismiss-keyguard; am start -a android.intent.action.MAIN -c android.intent.category.HOME' > "$out/home.txt"
+sleep 3
+podman exec "$name" timeout 20 adb -s emulator-5554 exec-out screencap -p > "$out/screen.png"
+echo PASS >> "$out/result.txt"
+cat "$out/result.txt"

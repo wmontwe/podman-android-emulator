@@ -1,0 +1,104 @@
+#!/bin/bash
+set -euo pipefail
+api=${ANDROID_API:-36}
+memory=${ANDROID_MEMORY_MB:-4096}
+cores=${ANDROID_CORES:-4}
+for value in "$api" "$memory" "$cores"; do
+    [[ "$value" =~ ^[1-9][0-9]*$ ]] || { echo 'API, memory, and cores must be positive integers' >&2; exit 2; }
+done
+for directory in "$ANDROID_HOME/platforms" "$ANDROID_HOME/platform-tools"; do
+    test -d "$directory" || { echo "Incomplete SDK layout: $directory is missing" >&2; exit 1; }
+done
+sysdir="$ANDROID_HOME/system-images/android-${api}/google_apis/arm64-v8a"
+test -f "$sysdir/package.xml" || { echo "System image not installed: $sysdir" >&2; exit 1; }
+# Linux ARM64 distributions may omit netsimd. Its packet-stream Wi-Fi path
+# blocks machine initialization when the helper is absent. Keep legacy Wi-Fi,
+# without disabling watchdogs. Bluetooth is unsupported in this runtime profile,
+# even if netsimd is supplied. UWB stays enabled: the system image always
+# declares UWB hardware, and without the emulator's UWB port the guest retries
+# starting the missing UWB HAL several times a second, forever.
+# The distribution has no host Vulkan driver (only SwiftShader GLES). With the
+# Vulkan feature on, the guest still loads its Vulkan driver, and the first
+# Vulkan call (WebView's GPU thread) waits for the host forever.
+feature_args=(-feature -Vulkan,-BluetoothEmulation)
+if [[ ! -x "$ANDROID_HOME/emulator/netsimd" ]]; then
+    echo 'netsimd unavailable: using legacy Wi-Fi; Bluetooth emulation disabled' >&2
+    feature_args=(-feature -Vulkan,-WiFiPacketStream,-BluetoothEmulation)
+fi
+config=/root/.android/avd/android.avd/config.ini
+mkdir -p /root/.android/avd
+if [[ ! -f "$config" ]]; then
+    echo no | avdmanager create avd --name android --package "system-images;android-${api};google_apis;arm64-v8a"
+    printf '\nhw.lcd.width=320\nhw.lcd.height=640\nhw.lcd.density=160\ndisk.dataPartition.size=6G\n' >> "$config"
+fi
+# Never silently migrate a persistent AVD to another guest system image.
+if ! grep -Eq "^image\.sysdir\.1[[:space:]]*=[[:space:]]*(/opt/android-sdk/)?system-images/android-${api}/google_apis/arm64-v8a/?[[:space:]]*$" "$config"; then
+    echo "AVD does not match API $api; use a separate volume for this Android version" >&2
+    exit 1
+fi
+socat TCP-LISTEN:15555,bind=0.0.0.0,reuseaddr,fork TCP:127.0.0.1:5555 &
+relay=$!
+emulator_pid=
+bluetooth_policy_pid=
+cleanup() {
+    status=$?
+    trap - EXIT TERM INT
+    if [[ -n "$bluetooth_policy_pid" ]]; then
+        kill "$bluetooth_policy_pid" 2>/dev/null || true
+        wait "$bluetooth_policy_pid" 2>/dev/null || true
+    fi
+    if [[ -n "$emulator_pid" ]]; then
+        kill -TERM "$emulator_pid" 2>/dev/null || true
+        wait "$emulator_pid" 2>/dev/null || true
+    fi
+    kill "$relay" 2>/dev/null || true
+    wait "$relay" 2>/dev/null || true
+    exit "$status"
+}
+trap cleanup EXIT
+trap 'exit 143' TERM
+trap 'exit 130' INT
+"$ANDROID_HOME/emulator/emulator" \
+    -avd android -sysdir "$sysdir" \
+    -accel on -no-window -no-audio -no-snapshot -no-metrics \
+    -gpu swiftshader_indirect -memory "$memory" -cores "$cores" \
+    -ports 5554,5555 -verbose -show-kernel \
+    "${feature_args[@]}" "$@" -qemu -machine highmem=on -no-reboot \
+    -monitor unix:/tmp/android-monitor.sock,server,nowait &
+emulator_pid=$!
+# Persist guest policy in the AVD too: host feature flags alone do not stop
+# Android from trying to start its Bluetooth stack. A fresh AVD may start that
+# stack before package management becomes available on its first boot.
+# Retry from launch: the settings must be written before Android's Bluetooth
+# service starts enabling the adapter, or disabling the package under it crashes
+# system_server. Boot time varies by host, so the deadline only starts at boot
+# completion; the emulator's own watchdog covers a boot that never completes.
+(
+    deadline=
+    while [[ -z "$deadline" ]] || (( SECONDS < deadline )); do
+        if timeout 5 "$ANDROID_HOME/platform-tools/adb" -s emulator-5554 shell '
+            set -e
+            settings put global bluetooth_on 0
+            settings put global ble_scan_always_enabled 0
+            # Package reconciliation during boot can undo an earlier disable.
+            test "$(getprop sys.boot_completed)" = 1
+            svc bluetooth disable >/dev/null 2>&1 || true
+            pm disable-user --user 0 com.google.android.bluetooth >/dev/null
+            pm list packages -d --user 0 com.google.android.bluetooth |
+                grep -Fx package:com.google.android.bluetooth
+        ' >/dev/null 2>&1; then
+            echo 'Guest Bluetooth package and background BLE scanning disabled' >&2
+            exit 0
+        fi
+        if [[ -z "$deadline" && "$(timeout 5 "$ANDROID_HOME/platform-tools/adb" -s emulator-5554 \
+                shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == 1 ]]; then
+            deadline=$((SECONDS + 180))
+        fi
+        sleep 1
+    done
+    echo 'Failed to enforce guest Bluetooth-disabled policy; stopping emulator' >&2
+    kill -TERM "$$" 2>/dev/null || true
+    exit 1
+) &
+bluetooth_policy_pid=$!
+wait "$emulator_pid"

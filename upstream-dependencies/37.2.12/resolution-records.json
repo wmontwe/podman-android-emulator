@@ -1,0 +1,584 @@
+[
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "0984226dbac1a947ad34490e0647cf7e5c5e6d14",
+    "commit_date": "2018-08-22T21:19:22+00:00",
+    "name": "platform/build",
+    "path": "build/make",
+    "revision": "0984226dbac1a947ad34490e0647cf7e5c5e6d14"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "84f5a11087cc9fcd353ccd6cfc490fb2a226948e",
+    "commit_date": "2026-06-10T09:41:57-07:00",
+    "name": "platform/tools/buildSrc",
+    "path": "tools/buildSrc",
+    "revision": "84f5a11087cc9fcd353ccd6cfc490fb2a226948e"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "6559d5fa78a9afc4e21cffdad4b91e45265d359b",
+    "commit_date": "2026-09-15T13:04:32-07:00",
+    "name": "trusty/external/qemu-libslirp",
+    "path": "external/libslirp",
+    "revision": "f5b10930fefe77d285189cd2438f69c679466e01"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "000dabbd0c985dae5c40eb3a9531d4c8ee3f9d18",
+    "commit_date": "2024-08-16T16:13:34-07:00",
+    "name": "platform/external/abseil-cpp",
+    "path": "external/abseil-cpp",
+    "revision": "000dabbd0c985dae5c40eb3a9531d4c8ee3f9d18"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "eddf74d83a621b91f3e1fa8d7601359ac4b9a1f9",
+    "commit_date": "2026-09-15T13:04:34-07:00",
+    "name": "platform/external/adt-infra",
+    "path": "external/adt-infra",
+    "revision": "8e119fed69931ef12011d65292e00a98b0f8849d"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "b0bdd3a435593ede2e353d4ff80cc3d949cf5529",
+    "commit_date": "2025-10-21T11:21:22-07:00",
+    "name": "platform/external/mobly-bundled-snippets",
+    "path": "external/mobly-bundled-snippets",
+    "revision": "b0bdd3a435593ede2e353d4ff80cc3d949cf5529"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "901e32aa9923b05c3a2af846f8a28fc79c93d0be",
+    "commit_date": "2024-06-27T13:23:46-07:00",
+    "name": "platform/external/angle",
+    "path": "external/angle",
+    "revision": "901e32aa9923b05c3a2af846f8a28fc79c93d0be"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "17ae36822a8084f45ae51f9031e81f8318254f33",
+    "commit_date": "2018-11-28T14:42:46-08:00",
+    "name": "platform/external/astc-codec",
+    "path": "external/astc-codec",
+    "revision": "17ae36822a8084f45ae51f9031e81f8318254f33"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "12a513beab0dfba3fa7e92baab5b7e473d5d52ce",
+    "commit_date": "2026-09-15T13:04:37-07:00",
+    "name": "platform/external/boringssl",
+    "path": "external/boringssl",
+    "revision": "54ed1d5a4e7cdacd82f95a0aec1e89a488db84e6"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "42cf8dee534419f1826f474d2f5fd67ac94a1706",
+    "commit_date": "2023-05-09T15:20:34-07:00",
+    "name": "platform/external/c-ares",
+    "path": "external/cares",
+    "revision": "42cf8dee534419f1826f474d2f5fd67ac94a1706"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "1967b1e3f928ce7660abc0966954c03e695011d6",
+    "commit_date": "2026-08-25T13:03:07-07:00",
+    "name": "platform/external/crashpad",
+    "path": "external/crashpad",
+    "revision": "dd7db6790d73210abaef36a04f2a2bd52cf22b89"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "0d382f91916499455604916a191e3bcf0cddf4fe",
+    "commit_date": "2026-03-24T18:00:19-07:00",
+    "name": "platform/build/bazel",
+    "path": "build/bazel",
+    "revision": "0d382f91916499455604916a191e3bcf0cddf4fe"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "110660333d9126a57154408fff5f675867cfd1f7",
+    "commit_date": "2025-08-20T15:33:00-07:00",
+    "name": "platform/external/pkg-config",
+    "path": "third_party/pkg-config",
+    "revision": "110660333d9126a57154408fff5f675867cfd1f7"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "08fd1838a4e418bb9386f083280166caf4b82239",
+    "commit_date": "2026-04-27T11:58:53-07:00",
+    "name": "platform/prebuilts/bazel/linux-x86_64",
+    "path": "prebuilts/bazel/linux-x86_64",
+    "revision": "08fd1838a4e418bb9386f083280166caf4b82239"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "1da4b04273638c8afe6f88bd7a7ccfb693640773",
+    "commit_date": "2019-02-12T22:19:14+00:00",
+    "name": "platform/external/curl",
+    "path": "external/curl",
+    "revision": "1da4b04273638c8afe6f88bd7a7ccfb693640773"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "e895d82d389eaece070a27533936077d2c8f414b",
+    "commit_date": "2026-02-18T09:57:52-08:00",
+    "name": "platform/external/dtc",
+    "path": "external/dtc",
+    "revision": "793ba05b3773657925e47630181c9a1bcd297b7f"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "aae810417e66486a01a1d9c7d83f020b7e06eb0e",
+    "commit_date": "2026-09-15T13:04:46-07:00",
+    "name": "platform/external/deqp",
+    "path": "external/deqp",
+    "revision": "f39b329be1bd88a6e358a9ee15d0d09e10865921"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "7f2f1b11a568e3bda9663215515a7c0734d3240b",
+    "commit_date": "2026-05-27T11:44:59-07:00",
+    "name": "platform/external/fmtlib",
+    "path": "external/fmtlib",
+    "revision": "e488b7aacbf0059d473d0e464497b66b93c98a71"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "9bc1eed18fdb082e78966ecb9324a08f7cd8d76f",
+    "commit_date": "2023-06-01T00:07:45+00:00",
+    "name": "platform/external/gfxstream-protocols",
+    "path": "external/gfxstream-protocols",
+    "revision": "9bc1eed18fdb082e78966ecb9324a08f7cd8d76f"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "013ef6db94e3677b24b8e4c9fbdf1708ecea516b",
+    "commit_date": "2026-06-10T09:42:44-07:00",
+    "name": "platform/external/googletest",
+    "path": "external/googletest",
+    "revision": "e81bfbe1acc9f2b1672d7c566e136f8d3a214cba"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "1bff076dad8a0cbb740e7f68586d59c3bb3e1bfd",
+    "commit_date": "2026-02-18T09:57:56-08:00",
+    "name": "platform/external/google-benchmark",
+    "path": "external/google-benchmark",
+    "revision": "1bff076dad8a0cbb740e7f68586d59c3bb3e1bfd"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "61a8ef3ca8494875cb37e28a69500ed366328810",
+    "commit_date": "2026-07-08T15:16:46-07:00",
+    "name": "platform/external/google-breakpad",
+    "path": "external/google-breakpad",
+    "revision": "5f320a2fd0f8192fcce0407fc8b721351e518789"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "fea7de5acfa2da17203f8eea78f974b41bcb6807",
+    "commit_date": "2026-07-08T15:16:46-07:00",
+    "name": "platform/external/grpc-grpc",
+    "path": "external/grpc",
+    "revision": "fea7de5acfa2da17203f8eea78f974b41bcb6807"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "23f123a3f531572d14a253db3451c950e21d2447",
+    "commit_date": "2021-02-10T14:06:27+00:00",
+    "name": "platform/external/libusb",
+    "path": "external/libusb",
+    "revision": "23f123a3f531572d14a253db3451c950e21d2447"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "9e617f38e8a384ccf0e2554d12d1aea2bcc08401",
+    "commit_date": "2026-08-04T13:01:48-07:00",
+    "name": "platform/external/libpng",
+    "path": "external/libpng",
+    "revision": "7b1535de9846d23a766ee63a1d0ddfd5808e0a18"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "27570c2a5b96dc5aea1a0085f610f37ab744f643",
+    "commit_date": "2022-03-08T11:46:21+00:00",
+    "name": "platform/external/libxml2",
+    "path": "external/libxml2",
+    "revision": "27570c2a5b96dc5aea1a0085f610f37ab744f643"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "649782b223e2d62ca5743140f3d4e6afccb85eb4",
+    "commit_date": "2026-02-18T09:58:01-08:00",
+    "name": "platform/external/lz4",
+    "path": "external/lz4",
+    "revision": "1733cd0bd46619829b46b1667f3af091d9337c34"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "623d88a75a0b17ad2cc4be8fa79c3b97e7384a40",
+    "commit_date": "2025-01-16T14:43:35-08:00",
+    "name": "platform/external/protobuf",
+    "path": "external/protobuf",
+    "revision": "623d88a75a0b17ad2cc4be8fa79c3b97e7384a40"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "37518c39e3db120322359090db3d54f6ac100078",
+    "commit_date": "2021-03-08T17:44:13+00:00",
+    "name": "platform/external/perfetto",
+    "path": "external/perfetto",
+    "revision": "37518c39e3db120322359090db3d54f6ac100078"
+  },
+  {
+    "method": "explicit-published-stable-commit",
+    "name": "platform/external/qemu",
+    "path": "external/qemu",
+    "revision": "8aaadeb1fea1202b287f1b8361f764a98950a27e"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "3b76205b4a5ab7fd9a11df8ac930d21cf52ad189",
+    "commit_date": "2025-05-09T18:20:36-07:00",
+    "name": "platform/external/regex-re2",
+    "path": "external/regex-re2",
+    "revision": "3b76205b4a5ab7fd9a11df8ac930d21cf52ad189"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "9f3ee561eee2bc195845201a4931d4709ff597e5",
+    "commit_date": "2024-12-16T11:03:35-08:00",
+    "name": "platform/external/bluetooth/glib",
+    "path": "external/glib",
+    "revision": "9f3ee561eee2bc195845201a4931d4709ff597e5"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "d16a940067fbc191364fc1d3e2a2d907209c9320",
+    "commit_date": "2017-11-16T17:40:22-08:00",
+    "name": "platform/external/tinyobjloader",
+    "path": "external/tinyobjloader",
+    "revision": "d16a940067fbc191364fc1d3e2a2d907209c9320"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "5d6e453751926c5209c7bad5ef7a6285feef5bb6",
+    "commit_date": "2025-03-25T14:17:30-07:00",
+    "name": "platform/external/virglrenderer",
+    "path": "external/virglrenderer",
+    "revision": "5d6e453751926c5209c7bad5ef7a6285feef5bb6"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "8d91dd49f13808eb2c9a25f899edcfef6f5930d7",
+    "commit_date": "2020-05-04T15:16:26+00:00",
+    "name": "platform/external/nasm",
+    "path": "external/nasm",
+    "revision": "645e4f02c622ba67eb754000cc00c9db8be31f85"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "db64ab725acee6991a7ee9746d960731cca0b563",
+    "commit_date": "2026-03-24T18:00:44-07:00",
+    "name": "platform/external/wpa_supplicant_8",
+    "path": "external/wpa_supplicant_8",
+    "revision": "db64ab725acee6991a7ee9746d960731cca0b563"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "5a4f1701693dff36e495d13dd14b70e15abe0d01",
+    "commit_date": "2025-01-06T13:29:01-08:00",
+    "name": "platform/external/zlib",
+    "path": "external/zlib",
+    "revision": "5a4f1701693dff36e495d13dd14b70e15abe0d01"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "36815ef31763c79dfc42b461e6ce35264ead08c4",
+    "commit_date": "2026-09-15T13:05:08-07:00",
+    "name": "platform/hardware/google/aemu",
+    "path": "hardware/google/aemu",
+    "revision": "b556b00ac5fffde13c5cbad1b659c528832f9da6"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "501867e6a3b1a3be7b935cc977d291150846edab",
+    "commit_date": "2026-09-15T13:05:09-07:00",
+    "name": "platform/hardware/google/gfxstream",
+    "path": "hardware/google/gfxstream",
+    "revision": "04d0287b04f72d908c621a919fa2ea5c563b1a66"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "9b0bdade8b09267282fb901d21219ab6af013c60",
+    "commit_date": "2023-03-11T09:33:19-08:00",
+    "name": "platform/prebuilts/android-emulator-build/archive",
+    "path": "prebuilts/android-emulator-build/archive",
+    "revision": "9b0bdade8b09267282fb901d21219ab6af013c60"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "5796f8ef2013c918988b37dd62f339e1f802f901",
+    "commit_date": "2026-09-15T13:05:11-07:00",
+    "name": "platform/prebuilts/android-emulator-build/common",
+    "path": "prebuilts/android-emulator-build/common",
+    "revision": "77441b3b04746081afbd0aa6f360b6704da58cc2"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "be7c00f399b415511d73308f0af0c0310512aced",
+    "commit_date": "2018-10-31T15:07:02-07:00",
+    "name": "platform/prebuilts/android-emulator-build/mesa",
+    "path": "prebuilts/android-emulator-build/mesa",
+    "revision": "be7c00f399b415511d73308f0af0c0310512aced"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "17837fdb1889014fa01cbbbda56afc9b6034815f",
+    "commit_date": "2015-06-01T13:38:29+02:00",
+    "name": "platform/prebuilts/android-emulator-build/mesa-deps",
+    "path": "prebuilts/android-emulator-build/mesa-deps",
+    "revision": "17837fdb1889014fa01cbbbda56afc9b6034815f"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "b06aee625002d0738c5576bbf437b9378229bef0",
+    "commit_date": "2021-01-06T10:59:12-08:00",
+    "name": "platform/prebuilts/android-emulator-build/qemu-android-deps",
+    "path": "prebuilts/android-emulator-build/qemu-android-deps",
+    "revision": "b06aee625002d0738c5576bbf437b9378229bef0"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "f2d41b8d15c2a628e95c2e755ed92186d03b763c",
+    "commit_date": "2025-09-17T16:15:59-07:00",
+    "name": "platform/prebuilts/android-emulator-build/qt",
+    "path": "prebuilts/android-emulator-build/qt",
+    "revision": "f2d41b8d15c2a628e95c2e755ed92186d03b763c"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "010fb1827e4c430a57dd1e75561a961b8ffc142e",
+    "commit_date": "2026-09-15T13:05:16-07:00",
+    "name": "device/google/cuttlefish",
+    "path": "device/google/cuttlefish",
+    "revision": "e14cb71de2fd7443ff923c00e783fe97943e7640"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "6efc7b9852d5572abe1db6cf2011093cdcbeed7e",
+    "commit_date": "2026-09-15T13:05:16-07:00",
+    "name": "platform/tools/netsim",
+    "path": "tools/netsim",
+    "revision": "350cb06552eafca597f3868612234c1bc2d2cad0"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "bba9b040de190d195ec34e52f8e722e43696b7dd",
+    "commit_date": "2026-09-15T13:05:17-07:00",
+    "name": "platform/tools/rootcanal",
+    "path": "tools/rootcanal",
+    "revision": "8e3819a6928aa76eda71407860e95bd8291cfe5f"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "baa7d911d3e8a3525b8928c448d03ee1deb03e25",
+    "commit_date": "2026-09-15T13:05:18-07:00",
+    "name": "platform/prebuilts/clang/host/linux-x86",
+    "path": "prebuilts/clang/host/linux-x86",
+    "revision": "4a885fb94d59ae65455f61d0d09ec5bd0f4ac6c6"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "1b2f676e865ec717ff17781425a28318db910eaf",
+    "commit_date": "2026-02-18T09:58:22-08:00",
+    "name": "platform/prebuilts/cmake/linux-x86",
+    "path": "prebuilts/cmake/linux-x86",
+    "revision": "1b2f676e865ec717ff17781425a28318db910eaf"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "f58b56eac26d03223f438e985f3d6334f6590cc6",
+    "commit_date": "2026-04-20T13:36:07-07:00",
+    "name": "platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+    "path": "prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+    "revision": "2340d42c6698c35497791a17b9f749ddc5106c96"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "d738ecc92e8af6ba336de6a095ad46c2d7a117a2",
+    "commit_date": "2026-03-24T18:00:58-07:00",
+    "name": "platform/prebuilts/ninja/linux-x86",
+    "path": "prebuilts/ninja/linux-x86",
+    "revision": "d738ecc92e8af6ba336de6a095ad46c2d7a117a2"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "3665e3a3bd0cd0d93f6247eb596938cea48268be",
+    "commit_date": "2022-08-30T15:36:28+08:00",
+    "name": "platform/prebuilts/python/linux-x86",
+    "path": "prebuilts/python/linux-x86",
+    "revision": "3665e3a3bd0cd0d93f6247eb596938cea48268be"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "ab98332f5597d8e2eecbe4c4b35a3d1272bc4783",
+    "commit_date": "2025-06-13T13:53:06-07:00",
+    "name": "platform/prebuilts/studio/jdk",
+    "path": "prebuilts/studio/jdk",
+    "revision": "ab98332f5597d8e2eecbe4c4b35a3d1272bc4783"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "f416fdeb6d1ebafda566d4ecff80eace51a750f2",
+    "commit_date": "2024-08-21T18:57:46+00:00",
+    "name": "platform/external/tink",
+    "path": "external/tink",
+    "revision": "f416fdeb6d1ebafda566d4ecff80eace51a750f2"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "4d42830893d6728eba192789c0629d76a359fca0",
+    "commit_date": "2019-10-30T14:24:40-07:00",
+    "name": "platform/external/rapidjson",
+    "path": "external/rapidjson",
+    "revision": "4d42830893d6728eba192789c0629d76a359fca0"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "913f7bfaeab883dbc0811bc569aaa12dcce70a19",
+    "commit_date": "2026-07-22T14:04:28-07:00",
+    "name": "platform/external/bison",
+    "path": "external/bison",
+    "revision": "ab70b64baf6d65c35498bfce689c0b8991f832db"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "104fbfc36067cd630eff3430ee9736febbe26956",
+    "commit_date": "2025-05-22T10:16:39-07:00",
+    "name": "platform/external/flex",
+    "path": "external/flex",
+    "revision": "104fbfc36067cd630eff3430ee9736febbe26956"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "d79b8b9392a67dc22cfb096d16e6f06d24c80834",
+    "commit_date": "2026-09-08T13:07:41-07:00",
+    "name": "toolchain/m4",
+    "path": "external/m4",
+    "revision": "4c63838f0ccd1a8850a3d17f31c3427668a78a23"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "34c5ae008bf811fce3006818f26f922b3647237a",
+    "commit_date": "2025-10-02T11:28:00-07:00",
+    "name": "platform/external/webrtc",
+    "path": "external/webrtc",
+    "revision": "34c5ae008bf811fce3006818f26f922b3647237a"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "a551e2263a3f5036b46502aa6822257ed1a8a49f",
+    "commit_date": "2026-07-22T14:04:35-07:00",
+    "name": "platform/external/flatbuffers",
+    "path": "external/flatbuffers",
+    "revision": "696f46b5ac8fc8a326f8361d8007d9d9ba341ab0"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "6dd693f53274937097938284c89ee6e5ca088fcd",
+    "commit_date": "2026-08-18T13:03:21-07:00",
+    "name": "platform/external/mesa3d",
+    "path": "external/mesa3d",
+    "revision": "2984e76c01eb572cf8f70cf8e175eadae6de4a30"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "4d44e42aacc0734d4c55e26602e5aded66f73f6c",
+    "commit_date": "2025-10-20T14:11:21+01:00",
+    "name": "platform/external/moltenvk",
+    "path": "external/moltenvk",
+    "revision": "4d44e42aacc0734d4c55e26602e5aded66f73f6c"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/emu-main-dev",
+    "observed_tip": "0861a1ad273555d0eb3bd1abffa4912d9d24bc2c",
+    "commit_date": "2026-07-22T14:04:40-07:00",
+    "name": "platform/tools/emulator",
+    "path": "tools/emulator",
+    "revision": "187a7f78ca7360295be5ae9e6e7f80bee0675252"
+  },
+  {
+    "method": "first-parent-at-or-before-stable-commit-date",
+    "upstream_ref": "refs/heads/main",
+    "observed_tip": "ee593394dd36395f0f9433b738abf1859e92193d",
+    "commit_date": "2026-08-28T10:57:09-07:00",
+    "name": "platform/tools/repohooks",
+    "path": "tools/repohooks",
+    "revision": "ee593394dd36395f0f9433b738abf1859e92193d"
+  }
+]

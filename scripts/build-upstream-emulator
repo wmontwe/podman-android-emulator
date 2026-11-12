@@ -1,0 +1,82 @@
+#!/bin/bash
+# Run only inside the isolated, network-disabled x86 builder container.
+set -euo pipefail
+source_root=${ANDROID_SOURCE_ROOT:-/work/source}
+output=${ANDROID_BUILD_ROOT:-/work/build-37.3.10}
+dist=${ANDROID_DIST_ROOT:-/work/dist-37.3.10}
+export ANDROID_DIST_ROOT="$dist"
+jobs=${ANDROID_BUILD_JOBS:-8}
+# Same bounds as build-upstream-uuid (the build container has 8 CPUs); reject before patching sources.
+[[ "$jobs" =~ ^[1-8]$ ]] || { echo 'ANDROID_BUILD_JOBS must be 1..8' >&2; exit 2; }
+export CMAKE_BUILD_PARALLEL_LEVEL="$jobs"
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_TERMINAL_PROMPT=0
+python3 - "$source_root" <<'PY'
+import hashlib, json, pathlib, shutil, subprocess, sys
+import xml.etree.ElementTree as ET
+root = pathlib.Path(sys.argv[1])
+lock = json.loads((root / 'upstream-source.lock.json').read_text())
+if hashlib.sha256((root / 'resolved-manifest.xml').read_bytes()).hexdigest() != lock['manifest_sha256']:
+    raise SystemExit('Resolved source manifest hash mismatch')
+if 'upstream_manifest_sha256' in lock:
+    for name, key in [('upstream-manifest.xml', 'upstream_manifest_sha256'), ('resolution-records.json', 'resolution_records_sha256')]:
+        if hashlib.sha256((root / name).read_bytes()).hexdigest() != lock[key]:
+            raise SystemExit('Dependency resolution evidence changed: ' + name)
+props = dict(line.split('=', 1) for line in (root / 'external/qemu/source.properties').read_text().splitlines() if '=' in line)
+if props.get('Pkg.Revision', '').strip() != lock['source_version']:
+    raise SystemExit('QEMU source version does not match selected source lock')
+projects = json.loads((root / 'fetched-projects.json').read_text())
+manifest = ET.fromstring((root / 'resolved-manifest.xml').read_bytes())
+expected = []
+for project in manifest.findall('project'):
+    groups = set(project.get('groups', '').split(','))
+    if ('notdefault' in groups and 'platform-linux' not in groups) or project.get('name') in lock['excluded_projects']:
+        continue
+    expected.append({key: project.get(key) for key in ('name', 'path', 'revision')})
+if projects != expected or len(expected) != lock['selected_project_count']:
+    raise SystemExit('Fetched source inventory does not match the complete pinned selection')
+for project in projects:
+    actual = subprocess.check_output(['git', '-C', str(root / project['path']), 'rev-parse', 'HEAD'], text=True).strip()
+    if actual != project['revision']:
+        raise SystemExit('Source revision mismatch: ' + project['path'])
+if shutil.disk_usage(root).free < 8 * 1024**3:
+    raise SystemExit('Less than 8 GiB free for build; stop rather than exhaust VM disk')
+print('Pinned source checkout preflight passed; this is not a vulnerability assessment')
+PY
+qemu="$source_root/external/qemu"
+record="$source_root/external/local-ipa-pci.json"
+if [[ ! -f "$record" ]]; then
+    python3 /usr/local/libexec/patch-upstream-qemu.py "$qemu"
+else
+    python3 - "$qemu" "$record" <<'PY'
+import hashlib, json, pathlib, sys
+root = pathlib.Path(sys.argv[1]); record = json.loads(pathlib.Path(sys.argv[2]).read_text())
+lock = json.loads((root.parents[1] / 'upstream-source.lock.json').read_text())
+if record['source_revision'] != lock['qemu_revision']:
+    raise SystemExit('Unexpected applied patch revision')
+for name, hashes in record['files'].items():
+    if hashlib.sha256((root / name).read_bytes()).hexdigest() != hashes['after']:
+        raise SystemExit('Previously patched source changed: ' + name)
+print('Previously applied source patch hashes match')
+PY
+fi
+export ANDROID_UUID_ROOT=${ANDROID_UUID_ROOT:-/work/uuid-pic/install}
+bash /usr/local/libexec/build-upstream-uuid
+mkdir -p "$dist"
+dpkg-query -W '-f=${binary:Package}\t${Version}\n' > "$dist/builder-packages.txt"
+cp "$source_root/upstream-source.lock.json" "$source_root/resolved-manifest.xml" \
+    "$source_root/fetched-projects.json" "$record" "$source_root/external/local-ipa-pci.patch" \
+    "$source_root/external/local-uuid-pic.json" "$source_root/external/local-uuid-pic.patch" "$dist/"
+if [[ -f "$source_root/upstream-manifest.xml" ]]; then
+    cp "$source_root/upstream-manifest.xml" "$source_root/resolution-records.json" "$dist/"
+fi
+cd "$qemu"
+printf 'scripts/build-upstream-emulator; linux_aarch64; release; crash=none; compile jobs=%s; link pool=1; configure,compile,distribution\n' "$jobs" > "$dist/upstream-build-command.txt"
+# Tasks have no automatic dependency resolution. Configure, compile, and package
+# must be invoked separately; selecting distribution alone would not build QEMU.
+for task in configure compile distribution; do
+    python3 android/build/python/cmake.py --target linux_aarch64 \
+        --config release --crash none --out "$output" --dist "$dist" --task "$task" \
+        --cmake_option 'CMAKE_JOB_POOLS=emulator_link=1' \
+        --cmake_option 'CMAKE_JOB_POOL_LINK=emulator_link'
+done
+printf '%s\n' 'Build/package completed; output is not approved for runtime execution yet.'

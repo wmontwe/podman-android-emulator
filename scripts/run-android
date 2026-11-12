@@ -1,0 +1,19 @@
+#!/bin/bash
+# Host-side launcher: enforce runtime cgroup limits independently of guest RAM.
+set -euo pipefail
+image=${ANDROID_IMAGE:-localhost/podman-android-emulator:api36}
+name=${ANDROID_CONTAINER_NAME:-android}
+volume=${ANDROID_DATA_VOLUME:-android-api36-data}
+port=${ANDROID_ADB_PORT:-5555}
+[[ "$port" =~ ^[0-9]+$ ]] && (( port >= 1024 && port <= 65535 )) || { echo 'Invalid unprivileged ADB port' >&2; exit 2; }
+test "$(podman info --format '{{.Host.Security.Rootless}}')" = true || { echo 'Rootless Podman is required' >&2; exit 1; }
+# No pull fallback: the upstream build must have been prepared locally.
+podman image exists "$image" || { echo "Build the reviewed upstream image first: $image" >&2; exit 1; }
+podman volume create --ignore "$volume" >/dev/null
+exec podman run --pull=never -d --name "$name" \
+    --device=/dev/kvm --shm-size=1g \
+    --memory=8g --memory-swap=8g --cpus=4 \
+    -e ANDROID_MEMORY_MB=4096 -e ANDROID_CORES=4 \
+    -p "127.0.0.1:${port}:15555" \
+    -v "$volume:/root/.android" \
+    "$image" "$@"

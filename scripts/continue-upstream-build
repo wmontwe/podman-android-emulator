@@ -1,0 +1,48 @@
+#!/bin/bash
+# Wait for successful source fetch, then compile in a separate offline container.
+# Never starts the resulting emulator or changes resource/security limits silently.
+set -euo pipefail
+mode=${1:-new}
+case "$mode" in new|--resume|--watch) ;; *) echo 'Usage: continue-upstream-build [--resume|--watch]' >&2; exit 2 ;; esac
+out=${ANDROID_BUILD_DIAGNOSTICS:-diagnostics/upstream-build/37.3.10}
+fetch_container=${ANDROID_FETCH_CONTAINER:-android-upstream-fetch-37-3-10}
+build_container=${ANDROID_BUILD_CONTAINER:-android-upstream-build-37-3-10}
+builder_image=${ANDROID_BUILDER_IMAGE:-localhost/android-upstream-builder:37.3.10}
+mkdir -p "$out"
+test "$(podman info --format '{{.Host.Security.Rootless}}')" = true
+status=$(podman wait "$fetch_container")
+podman logs "$fetch_container" > "$out/source-fetch.log" 2>&1
+if [[ "$status" != 0 ]]; then
+    echo "Source fetch failed (exit $status); build not started. See $out/source-fetch.log" >&2
+    exit 1
+fi
+podman inspect "$fetch_container" > "$out/fetch-container.json"
+podman image inspect "$builder_image" > "$out/builder-image.json"
+if [[ "$mode" == --resume ]]; then
+    test "$(podman inspect "$build_container" --format '{{.State.Status}}')" = exited
+    test "$(podman inspect "$build_container" --format '{{.HostConfig.NetworkMode}}')" = none
+    podman update --memory=16g --memory-swap=16g --cpus=8 "$build_container"
+    podman start "$build_container"
+elif [[ "$mode" == --watch ]]; then
+    test "$(podman inspect "$build_container" --format '{{.State.Status}}')" = running
+    test "$(podman inspect "$build_container" --format '{{.HostConfig.NetworkMode}}')" = none
+else
+    podman run --pull=never -d --name "$build_container" \
+        --platform linux/amd64 --network=none \
+        --cap-drop=all --security-opt=no-new-privileges \
+        --memory=16g --memory-swap=16g --cpus=8 \
+        -e ANDROID_BUILD_JOBS=8 -e ANDROID_BUILD_ROOT=/work/build-37.3.10 \
+        -e ANDROID_DIST_ROOT=/work/dist-37.3.10 \
+        -v android-upstream-source:/work "$builder_image" \
+        -lc 'exec /usr/local/libexec/build-upstream-emulator'
+fi
+started=$(podman inspect "$build_container" --format '{{.State.StartedAt.Unix}}')
+podman inspect "$build_container" > "$out/build-container.json"
+status=$(podman wait "$build_container")
+podman logs --since "$started" "$build_container" > "$out/compile.log" 2>&1
+printf '%s\n' "$status" > "$out/compile.exit"
+if [[ "$status" != 0 ]]; then
+    echo "Upstream build failed (exit $status); no runtime started. See $out/compile.log" >&2
+    exit 1
+fi
+echo 'Upstream compile/package completed. Artifacts remain in the source volume for review; no runtime started.'

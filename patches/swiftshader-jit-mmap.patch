@@ -1,0 +1,40 @@
+--- a/src/Reactor/ExecutableMemory.cpp
++++ b/src/Reactor/ExecutableMemory.cpp
+@@ -198,6 +198,13 @@
+ 		{
+ 			mapping = nullptr;
+ 		}
++	#elif defined(__linux__)
++		// Keep JIT pages separate from the allocator heap. SELinux can allow
++		// executable anonymous mappings without granting process execheap.
++		mapping = mmap(nullptr, length, PROT_READ | PROT_WRITE,
++		               MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++		if(mapping == MAP_FAILED)
++			mapping = nullptr;
+ 	#else
+ 		mapping = allocate(length, pageSize);
+ 	#endif
+@@ -211,7 +218,13 @@
+ 		unsigned long oldProtection;
+ 		VirtualProtect(memory, bytes, PAGE_EXECUTE_READ, &oldProtection);
+ 	#else
+-		mprotect(memory, bytes, PROT_READ | PROT_EXEC);
++		// Fail closed rather than executing non-executable memory after a
++		// protection failure. Never request simultaneous write and execute.
++		if(mprotect(memory, bytes, PROT_READ | PROT_EXEC) != 0)
++			abort();
++		#if defined(__aarch64__)
++			__builtin___clear_cache(static_cast<char *>(memory), static_cast<char *>(memory) + bytes);
++		#endif
+ 	#endif
+ }
+ 
+@@ -221,7 +234,7 @@
+ 		unsigned long oldProtection;
+ 		VirtualProtect(memory, bytes, PAGE_READWRITE, &oldProtection);
+ 		deallocate(memory);
+-	#elif defined(LINUX_ENABLE_NAMED_MMAP)
++	#elif defined(LINUX_ENABLE_NAMED_MMAP) || defined(__linux__)
+ 		size_t pageSize = memoryPageSize();
+ 		size_t length = (bytes + pageSize - 1) & ~(pageSize - 1);
+ 		munmap(memory, length);

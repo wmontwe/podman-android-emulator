@@ -1,0 +1,10 @@
+{
+  "source_repository": "https://android.googlesource.com/platform/external/swiftshader",
+  "source_revision": "9759b180cf5b6687afc1f231b1b9fa230da1b261",
+  "component": "legacy GLES SwiftShader ABI used by upstream emulator distribution",
+  "patch": "patches/swiftshader-jit-mmap.patch",
+  "build_architecture": "linux/arm64",
+  "build_type": "Release",
+  "targets": ["libEGL", "libGLESv2", "libGLES_CM"],
+  "status": "source-pinned-runtime-validation-pending"
+}

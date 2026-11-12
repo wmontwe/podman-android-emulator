@@ -1,0 +1,24 @@
+#!/bin/bash
+# Package corresponding source for a release. The source volume is mounted
+# read-only into a network-less, capability-free container.
+set -euo pipefail
+# Plain string, not an array: macOS bash 3.2 rejects empty arrays under set -u.
+check=
+if [[ ${1:-} == --check-only ]]; then check=--check-only; shift; fi
+tag=${1:?Usage: package-source [--check-only] TAG [source-volume]}
+volume=${2:-android-upstream-source}
+image=${ANDROID_SOURCE_PACKAGER_IMAGE:-localhost/android-upstream-fetcher:latest}
+repo=$(cd "$(dirname "$0")/.." && pwd)
+out="$repo/dist-release"
+[[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-r[1-9][0-9]*$ ]] || { echo 'Tag must look like v37.3.10-r1' >&2; exit 2; }
+test -f "$repo/build-inputs/provenance.json" || { echo 'Missing build-inputs/provenance.json' >&2; exit 1; }
+podman image exists "$image" || { echo "Build the source fetcher image first: $image" >&2; exit 1; }
+mkdir -p "$out"
+[[ -n $check ]] || rm -f "$out/source-${tag}".*
+exec podman run --rm --pull=never --network=none --cap-drop=all \
+    --security-opt=no-new-privileges --memory=8g --cpus=4 \
+    -v "$volume:/work:ro" \
+    -v "$repo/build-inputs/provenance.json:/inputs/provenance.json:ro" \
+    -v "$repo/scripts/package-source.py:/usr/local/libexec/package-source.py:ro" \
+    -v "$out:/out" \
+    --entrypoint /usr/bin/python3 "$image" -I /usr/local/libexec/package-source.py ${check:+"$check"} "$tag"

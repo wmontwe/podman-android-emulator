@@ -1,0 +1,47 @@
+{
+  "commit": "223638d03d23f1eeb303535ed5d55d4f211107fd",
+  "tree": "c9a37b9f149b54bf86c2db125f9501af34041d54",
+  "parents": [
+    "200e6f5d6b98b6166eb058b2fc2153e4ac605ad1"
+  ],
+  "author": {
+    "name": "Matt Muir",
+    "email": "mkmuir@google.com",
+    "time": "Fri Nov 13 20:20:28 2026 +0000"
+  },
+  "committer": {
+    "name": "Matt Muir",
+    "email": "mkmuir@google.com",
+    "time": "Fri Nov 13 20:20:28 2026 +0000"
+  },
+  "message": "Bump Emulator to 37.3.10 Stable\n\nBug: 585619272\nChange-Id: I57c047763a1a4496ea272361ab062f5eb5867b16\n",
+  "tree_diff": [
+    {
+      "type": "modify",
+      "old_id": "0c006743bae10b2359c861060449959f1649b9dc",
+      "old_mode": 33188,
+      "old_path": "mac.source.properties",
+      "new_id": "cab56295bf2adb8b59202d70a37a6fc5d7aed587",
+      "new_mode": 33188,
+      "new_path": "mac.source.properties"
+    },
+    {
+      "type": "modify",
+      "old_id": "0c006743bae10b2359c861060449959f1649b9dc",
+      "old_mode": 33188,
+      "old_path": "source.properties",
+      "new_id": "cab56295bf2adb8b59202d70a37a6fc5d7aed587",
+      "new_mode": 33188,
+      "new_path": "source.properties"
+    },
+    {
+      "type": "modify",
+      "old_id": "0c006743bae10b2359c861060449959f1649b9dc",
+      "old_mode": 33188,
+      "old_path": "win.source.properties",
+      "new_id": "cab56295bf2adb8b59202d70a37a6fc5d7aed587",
+      "new_mode": 33188,
+      "new_path": "win.source.properties"
+    }
+  ]
+}
