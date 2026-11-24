@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "tag": "v37.3.10-r1",
+  "emulator_version": "37.3.10",
+  "release_revision": 1,
+  "image": "ghcr.io/wmontwe/podman-android-emulator",
+  "image_tag": "37.3.10-r1",
+  "guest_api": 36,
+  "build": "local",
+  "source_revision": "223638d03d23f1eeb303535ed5d55d4f211107fd",
+  "manifest_revision": "2692acc620f6563b21995540656674faeb536cdc",
+  "archive": {
+    "name": "emulator-v37.3.10-r1-linux-aarch64.tar.gz",
+    "sha256": "c96e00d2b07ad08d9eea708735e271a06181a033361fa0cc9d0900703477f796",
+    "size": 86167720
+  },
+  "source_archive": {
+    "name": "source-v37.3.10-r1.tar.xz",
+    "sha256": "1e112d50ca88b9030d7c3caa2efbb5a6d11593f2a73ff7981383129ec39c137a",
+    "files": 104572,
+    "parts": [
+      {
+        "name": "source-v37.3.10-r1.tar.xz.part00",
+        "sha256": "1e112d50ca88b9030d7c3caa2efbb5a6d11593f2a73ff7981383129ec39c137a",
+        "size": 1962526812
+      }
+    ]
+  }
+}
