@@ -8,10 +8,12 @@ machine's Linux VM. The container only gets `/dev/kvm`: no privileged mode, no
 added capabilities, SELinux enforcing. That makes it suitable for giving tools
 and AI agents an Android device without access to your Mac.
 
+> [!IMPORTANT]
 > **Personal project.** I built this for my own use and publish it as is,
 > without support, security fixes or any warranty. Issues and pull requests
 > may go unanswered. Review it yourself before you rely on it.
->
+
+> [!NOTE]
 > **Experimental.** Android 16 boots and runs apps with software rendering.
 > Bluetooth is not available and there is no hardware GPU. See
 > [limitations](#limitations).
@@ -79,7 +81,7 @@ adb connect 127.0.0.1:5555                                                  # fr
 podman exec android adb -s emulator-5554 exec-out screencap -p > screen.png
 ```
 
-Stop it with `podman stop android`; the emulator shuts down cleanly. Android's
+Stop it with `podman stop android`. The emulator shuts down cleanly. Android's
 data persists in the `android-api36-data` volume.
 
 ## Configuration
@@ -98,7 +100,7 @@ Environment variables:
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `ANDROID_IMAGE` | `localhost/podman-android-emulator:api36` | Image to run; never pulled automatically |
+| `ANDROID_IMAGE` | `localhost/podman-android-emulator:api36` | Image to run, never pulled automatically |
 | `ANDROID_CONTAINER_NAME` | `android` | Container name |
 | `ANDROID_DATA_VOLUME` | `android-api36-data` | Volume for Android data |
 | `ANDROID_ADB_PORT` | `5555` | Loopback port for ADB |
@@ -109,21 +111,21 @@ same volume. Starting `podman run` by hand skips the resource limits.
 ## Limitations
 
 - **Software rendering only.** Rendering uses SwiftShader OpenGL ES on the
-  container's CPUs; the guest has no Vulkan. That is fine for typical apps, UI
+  container's CPUs. The guest has no Vulkan. That is fine for typical apps, UI
   tests and WebView content, but not for games, Vulkan apps or graphics
-  benchmarks. Stock krunkit offers no hardware OpenGL ES 3; see
+  benchmarks. Stock krunkit offers no hardware OpenGL ES 3. See
   [design notes](docs/design-notes.md#gpu-rendering).
 - **No Bluetooth or UWB.** The Linux ARM64 emulator build lacks the `netsimd`
   helper, so Wi-Fi uses the legacy backend, the guest Bluetooth stack is
   disabled, and UWB reports itself as unavailable.
-- **Google APIs, not Google Play.** Play services are included; the Play Store
-  is not.
+- **Google APIs, not Google Play.** Play services are included, but the
+  Play Store is not.
 - **The WebView does not update itself.** Without the Play Store, it stays at the
   system image's version. Rebuild the local image when a new system image
   revision is released.
 - **First boot of a new device is slow.** Play services set up for several
-  minutes; later boots take about 45 s.
-- **Validation is limited** to boot, lifecycle, memory and WebView tests; see
+  minutes. Later boots take about 45 s.
+- **Validation is limited** to boot, lifecycle, memory and WebView tests. See
   [validation](docs/validation.md).
 
 ## Documentation
@@ -142,5 +144,5 @@ This project's scripts, Containerfiles and documentation are licensed under the
 [Apache License 2.0](LICENSE). The images contain third-party software under
 their own licenses: the emulator (Apache-2.0, see its `NOTICE.txt`), QEMU
 (GPL-2.0) and Ubuntu packages. The Android system image and SDK tools in the
-local image are covered by the Android SDK License Agreement; see
+local image are covered by the Android SDK License Agreement. See
 [releases](docs/releases.md).
